@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<robot name="microfred">
+  <!-- Define materials -->
+  <material name="blue">
+    <color rgba="0 0.3 0.8 1"/>
+  </material>
+  <material name="gray">
+    <color rgba="0.7 0.7 0.7 1"/>
+  </material>
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1"/>
+  </material>
+
+  <!-- Base Link (center platform) -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.4 0.3 0.05"/> <!-- Length, Width, Height -->
+      </geometry>
+      <material name="gray"/>
+      <origin xyz="0 0 0.1"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.4 0.3 0.05"/>
+      </geometry>
+      <origin xyz="0 0 0.1"/>
+    </collision>
+  </link>
+
+  <!-- Left Hull -->
+  <link name="left_hull">
+    <visual>
+      <geometry>
+        <box size="0.6 0.1 0.15"/> <!-- Length, Width, Height -->
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.6 0.1 0.15"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Right Hull -->
+  <link name="right_hull">
+    <visual>
+      <geometry>
+        <box size="0.6 0.1 0.15"/> <!-- Length, Width, Height -->
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.6 0.1 0.15"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Left Propeller Housing -->
+  <link name="left_prop_housing">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.02"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+  </link>
+
+  <!-- Right Propeller Housing -->
+  <link name="right_prop_housing">
+    <visual>
+      <geometry>
+        <cylinder length="0.1" radius="0.02"/>
+      </geometry>
+      <material name="gray"/>
+    </visual>
+  </link>
+
+  <!-- Left Propeller -->
+  <link name="left_propeller">
+    <visual>
+      <geometry>
+        <cylinder length="0.01" radius="0.03"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <!-- Right Propeller -->
+  <link name="right_propeller">
+    <visual>
+      <geometry>
+        <cylinder length="0.01" radius="0.03"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <!-- IMU Link -->
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.02 0.02 0.02"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <!-- GPS Link -->
+  <link name="gps_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.02" radius="0.02"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <!-- JOINTS -->
+  <!-- Left Hull Joint -->
+  <joint name="left_hull_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_hull"/>
+    <origin xyz="0 0.2 0"/>
+  </joint>
+
+  <!-- Right Hull Joint -->
+  <joint name="right_hull_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_hull"/>
+    <origin xyz="0 -0.2 0"/>
+  </joint>
+
+  <!-- Left Propeller Housing Joint -->
+  <joint name="left_prop_housing_joint" type="fixed">
+    <parent link="left_hull"/>
+    <child link="left_prop_housing"/>
+    <origin xyz="-0.3 0 -0.1" rpy="1.5708 0 0"/>
+  </joint>
+
+  <!-- Right Propeller Housing Joint -->
+  <joint name="right_prop_housing_joint" type="fixed">
+    <parent link="right_hull"/>
+    <child link="right_prop_housing"/>
+    <origin xyz="-0.3 0 -0.1" rpy="1.5708 0 0"/>
+  </joint>
+
+  <!-- Left Propeller Joint -->
+  <joint name="left_propeller_joint" type="continuous">
+    <parent link="left_prop_housing"/>
+    <child link="left_propeller"/>
+    <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- Right Propeller Joint -->
+  <joint name="right_propeller_joint" type="continuous">
+    <parent link="right_prop_housing"/>
+    <child link="right_propeller"/>
+    <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- IMU Joint -->
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.15"/>
+  </joint>
+
+  <!-- GPS Joint -->
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+    <origin xyz="0.15 0 0.15"/>
+  </joint>
+</robot>

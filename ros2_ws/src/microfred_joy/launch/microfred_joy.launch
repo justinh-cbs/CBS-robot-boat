@@ -1,0 +1,55 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    joy_dev = LaunchConfiguration('joy_dev')
+    cmd_vel_out = LaunchConfiguration('cmd_vel_out')
+
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            'joy_dev',
+            default_value='/dev/input/js0',
+            description='Joystick device path'
+        ),
+
+        DeclareLaunchArgument(
+            'cmd_vel_out',
+            default_value='cmd_vel',
+            description='Topic for velocity commands'
+        ),
+
+        Node(
+            package='joy',
+            executable='joy_node',
+            name='microfred_joy',
+            parameters=[{
+                'dev': joy_dev,
+                'coalesce_interval': 0.05,
+                'autorepeat_rate': 10.0,
+                'deadzone': 0.12
+            }]
+        ),
+
+        Node(
+            package='teleop_twist_joy',
+            executable='teleop_node',
+            name='joy_teleop_node',
+            parameters=[{
+                'axis_linear': 5,  # Up/Down on left stick
+                'axis_angular': 2,  # Left/Right on right stick
+                'scale_linear': 3.0,
+                'scale_angular': 2.0
+            }],
+            remappings=[
+                ('cmd_vel', cmd_vel_out)
+            ]
+        ),
+
+        Node(
+            package='microfred_joy',
+            executable='microfred_joy',
+            name='teleop'
+        )
+    ])

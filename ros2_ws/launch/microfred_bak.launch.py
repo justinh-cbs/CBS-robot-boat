@@ -1,0 +1,124 @@
+import os
+
+from ament_index_python import get_package_share_directory
+import launch
+from launch import LaunchDescription
+from launch_ros.actions import Node
+import launch_ros.actions
+from launch.actions.declare_launch_argument import DeclareLaunchArgument
+from launch.substitutions import TextSubstitution
+from launch.substitutions.launch_configuration import LaunchConfiguration
+
+
+def generate_launch_description():
+
+    # rosbridge internal params
+    port_rosbridge = launch.substitutions.LaunchConfiguration(
+        "port_rosbridge", default=5001
+    )
+    unregister_timeout = launch.substitutions.LaunchConfiguration(
+        "unregister_timeout", default="9999999.9"
+    )
+    retry_startup_delay = launch.substitutions.LaunchConfiguration(
+        "retry_startup_delay", default="10.0"
+    )
+    fragment_timeout = launch.substitutions.LaunchConfiguration(
+        "fragment_timeout", default="30"
+    )
+    delay_between_messages = launch.substitutions.LaunchConfiguration(
+        "delay_between_messages", default="0"
+    )
+    max_message_size = launch.substitutions.LaunchConfiguration(
+        "max_message_size", default="999999999"
+    )
+
+    rosbridge_node = launch_ros.actions.Node(
+        name="rosbridge",
+        package="rosbridge_server",
+        executable="rosbridge_websocket",
+        output="screen",
+        parameters=[
+            {"authenticate": False},
+            {"port": port_rosbridge},
+            {"address": ""},
+            {"retry_startup_delay": retry_startup_delay},
+            {"fragment_timeout": fragment_timeout},
+            {"delay_between_messages": delay_between_messages},
+            {"max_message_size": max_message_size},
+            {"unregister_timeout": unregister_timeout},
+            {"use_compression": True},
+        ],
+    )
+
+    rosapi_node = launch_ros.actions.Node(
+        name="rosapi", package="rosapi", executable="rosapi_node"
+    )
+
+    share_dir = get_package_share_directory("image_pub")
+
+    path_to_parameters_launch_arg = DeclareLaunchArgument(
+        "path_to_parameters",
+        default_value=TextSubstitution(
+            text=os.path.join(share_dir, "config/imx21983_raw_image_pub.yaml")
+        ),
+    )
+    return LaunchDescription(
+        [
+            rosbridge_node,
+            rosapi_node,
+            path_to_parameters_launch_arg,
+            # mono rear camera
+            Node(
+                package="image_pub",
+                executable="mono_image_pub",
+                name="raw_image_publisher",
+                output="screen",
+                parameters=[
+                    LaunchConfiguration("path_to_parameters"),
+                ],
+            ),
+            Node(
+                package="gps_reader",
+                namespace="microfred",
+                executable="gps",
+                name="gps",
+            ),
+            Node(
+                package="rtk_pub", namespace="microfred", executable="rtk", name="rtk"
+            ),
+            Node(package="imu", namespace="microfred", executable="imu", name="imu"),
+            Node(
+                package="joy", namespace="microfred", executable="joy_node", name="sim"
+            ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                arguments=[
+                    "0",
+                    "0",
+                    "0",
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "base_footprint",
+                    "base_imu_link",
+                ],
+            ),
+            Node(
+                name="tf2_ros_fp_odom",
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=[
+                    "0",
+                    "0",
+                    "0",
+                    "0.0",
+                    "0.0",
+                    "0.0",
+                    "base_footprint",
+                    "odom",
+                ],
+            ),
+        ]
+    )

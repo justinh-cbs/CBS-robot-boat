@@ -1,0 +1,33 @@
+capture_directory: ~
+fixed_frame: map
+target_frame: base_link
+image_transport: raw
+displays:
+  - type: mapviz_plugins/tile_map
+    name: Tile Map
+    config:
+      visible: true
+      alpha: 1
+      url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      source: OpenStreetMap
+      frame: wgs84
+  - type: mapviz_plugins/navsat
+    name: GPS
+    config:
+      visible: true
+      topic: /gps/fix
+      frame: wgs84
+      color: "#ff0000"
+      draw_style: points
+      position_tolerance: 30
+      buffer_size: 0
+  - type: mapviz_plugins/odometry
+    name: Odometry
+    config:
+      visible: true
+      topic: /odom
+      frame: map
+      color: "#0000ff"
+      draw_style: arrows
+      position_tolerance: 30
+      buffer_size: 1

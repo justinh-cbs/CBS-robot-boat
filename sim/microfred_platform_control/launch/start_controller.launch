@@ -1,0 +1,12 @@
+<launch>
+
+
+
+    <!-- Vehicle's initial position -->
+
+
+    <include file="$(find microfred_platform_control)/launch/start_pid_controller.launch">
+ 
+    </include>
+
+</launch>

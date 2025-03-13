@@ -1,0 +1,4 @@
+# GetWaypoints.srv
+---
+bool success
+string message

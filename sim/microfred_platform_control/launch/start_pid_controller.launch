@@ -1,0 +1,53 @@
+<!-- 
+Starts the [PD controller with compensation of restoring forces](https://github.com/uuvsimulator/uuv_simulator/blob/master/uuv_control/uuv_trajectory_control/scripts/rov_pd_grav_compensation_controller.py) 
+node with the configurations for the RexROV 2 vehicle.
+
+> **Example**
+
+```
+roslaunch uuv_gazebo_worlds ocean_waves.launch
+```
+
+```
+roslaunch rexrov2_description upload_rexrov2.launch
+```
+
+```
+roslaunch rexrov2_control start_pd_grav_compensation_controller.launch
+```
+-->
+<launch>
+    <arg name="model_name" default="microfred_platform" />
+    <arg name="uuv_name" default="$(arg model_name)"/>
+
+
+    <arg name="use_ned_frame" default="false" doc="If true, the reference frame is set to be NED (North-East-Down) instead of Gazebo's default ENU (East-North-Up)"/>
+
+    <arg name="Kp" default="1000,1000,1000,1000,1000,1000" doc="Coefficients for the $K_p$ diagonal matrix"/>
+    <arg name="Kd" default="100,100,100,100,100,100" doc="Coefficients for the $K_d$ diagonal matrix"/>
+    
+
+
+
+
+    <!-- Thruster manager configuration -->
+    <arg name="thruster_manager_output_dir" default="$(find microfred_platform_control)/config" doc="Output directory for the generated thruster manager"/>
+    <arg name="thruster_manager_config_file" default="$(find microfred_platform_control)/config/thruster_manager.yaml" doc="File storing the configuration of the thruster manager"/>
+    <arg name="tam_file" default="$(find microfred_platform_control)/config/TAM.yaml" doc="File storing the thruster allocation matrix"/>
+
+    <!-- Vehicle parameter for the controller -->
+    <arg name="model_params_file" default="$(find microfred_platform_control)/config/model_params.yaml" doc="File storing the vehicle model parameters loaded by the controller"/>
+
+    <include file="$(find uuv_trajectory_control)/launch/rov_pd_grav_compensation_controller.launch">
+      <arg name="uuv_name" value="$(arg uuv_name)"/>
+      <arg name="saturation" value="2000"/>
+      <arg name="Kp" value="$(arg Kp)"/>
+      <arg name="Kd" value="$(arg Kd)"/>
+      <arg name="use_ned_frame" value="$(arg use_ned_frame)"/>
+      <arg name="thruster_manager_output_dir" value="$(arg thruster_manager_output_dir)"/>
+      <arg name="thruster_manager_config_file" value="$(arg thruster_manager_config_file)"/>
+      <arg name="tam_file" value="$(arg tam_file)"/>
+      <arg name="model_params_file" value="$(arg model_params_file)"/>
+    </include>
+
+</launch>

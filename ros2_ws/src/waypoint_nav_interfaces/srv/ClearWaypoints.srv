@@ -1,0 +1,4 @@
+# Request - empty because we don't need any input
+---
+# Response
+bool success   # True if waypoints were cleared successfully
