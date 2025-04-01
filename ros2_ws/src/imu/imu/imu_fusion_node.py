@@ -29,23 +29,22 @@ class IMUFusionNode(Node):
         self.last_mag_values = np.zeros(3)
         self.mag_variance = 0.0
 
-        # Dynamic alpha parameters
-        self.alpha_min = 0.01  # Minimum magnetometer influence (2%)
-        self.alpha_max = 0.15  # Maximum magnetometer influence (15%)
+        # dynamic alpha parameters
+        self.alpha_min = 0.01  # minimum magnetometer influence (1%)
+        self.alpha_max = 0.15  # maximum magnetometer influence (15%)
         self.mag_stability_threshold = 0.05  # Lower = more stable
 
-        # Moving average for magnetometer stability
+        # moving average window for magnetometer stability
         self.mag_history = []
         self.MAG_HISTORY_SIZE = 20
 
-        # Publishers & Subscribers
         self.imu_publisher = self.create_publisher(Imu, "imu/data", 10)
         self.raw_imu_sub = self.create_subscription(Imu, "imu", self.imu_callback, 10)
         self.mag_sub = self.create_subscription(
             MagneticField, "imu/mag", self.mag_callback, 10
         )
 
-        # Store gyro scale factor
+        # gyro scaling factor
         self.gyro_scale = np.array([0.01, 0.01, 0.01])
         self.tf_broadcaster = TransformBroadcaster(self)
 
@@ -53,7 +52,6 @@ class IMUFusionNode(Node):
         """Calculate magnetometer stability based on recent readings"""
         current_mag = np.array([mag_data.x, mag_data.y, mag_data.z])
 
-        # Add to history
         self.mag_history.append(current_mag)
         if len(self.mag_history) > self.MAG_HISTORY_SIZE:
             self.mag_history.pop(0)
@@ -61,24 +59,20 @@ class IMUFusionNode(Node):
         if len(self.mag_history) < 2:
             return 0.0
 
-        # Calculate variance of magnitude
         magnitudes = [np.linalg.norm(m) for m in self.mag_history]
         variance = np.var(magnitudes)
 
-        # Calculate rate of change
         mag_delta = np.linalg.norm(current_mag - self.last_mag_values)
         self.last_mag_values = current_mag
 
-        # Combine metrics (lower = more stable)
+        # combine metrics (lower = more stable)
         stability = 1.0 / (1.0 + variance + mag_delta)
         return stability
 
     def get_dynamic_alpha(self, stability):
         """Calculate dynamic alpha based on magnetometer stability"""
-        # Map stability to alpha range
         alpha = self.alpha_min + (self.alpha_max - self.alpha_min) * stability
 
-        # Apply sigmoid function for smoother transition
         alpha = (
             1 / (1 + math.exp(-10 * (alpha - 0.5))) * (self.alpha_max - self.alpha_min)
             + self.alpha_min
@@ -138,7 +132,6 @@ class IMUFusionNode(Node):
             ]
         )
 
-        # Apply scaling
         gyro = gyro * self.gyro_scale
 
         self.angles += gyro * dt
@@ -201,13 +194,10 @@ class IMUFusionNode(Node):
         if self.calibrate_magnetometer(msg.magnetic_field):
             return
 
-        # Calculate magnetometer stability
         stability = self.calculate_mag_stability(msg.magnetic_field)
 
-        # Get dynamic alpha based on stability
         alpha = self.get_dynamic_alpha(stability)
 
-        # Calculate mag heading with tilt compensation
         mag_heading = self.calculate_mag_heading(
             msg.magnetic_field.x,
             msg.magnetic_field.y,
@@ -216,20 +206,16 @@ class IMUFusionNode(Node):
             self.angles[1],
         )
 
-        # Complementary filter for yaw with dynamic alpha
         gyro_yaw = self.angles[2]
 
-        # Handle wraparound
         diff = mag_heading - gyro_yaw
         if diff > math.pi:
             mag_heading -= 2 * math.pi
         elif diff < -math.pi:
             mag_heading += 2 * math.pi
 
-        # Apply complementary filter with dynamic alpha
         self.angles[2] = (1 - alpha) * gyro_yaw + alpha * mag_heading
 
-        # Debug logging for alpha (optional)
         if stability > self.mag_stability_threshold:
             self.get_logger().debug(
                 f"High mag stability: {stability:.3f}, alpha: {alpha:.3f}"
