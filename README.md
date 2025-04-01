@@ -86,6 +86,18 @@ The notebook will tell you which cells to run depending on your situation
 
 microfred_gazebo.urdf.xacro
 
+### Machine Vision Demo
+
+To run the NVidia object detection demo with our stereo camera setup:
+Detach the camera that isn't rotated 90 degrees (the right side camera, the left one stays connected)
+Download the model:
+- ```cd jetson-inference/tools```
+- ```./download_models.sh```  
+  Select the model(s) you want to use, then hit `Okay` to download.  
+  Run the demo with this command (first time running a particular model will take a while, but the second time should be much faster):  
+- ```detectnet --image-flip=clockwise --image-width=2000 --image-height=520```  
+Add the ```--network=<your network>``` flag to specify a different model.  
+
 ### Microfred Simulation
 
 To simulate the vehicle, please refer to the UUV Simulator repository and follow the installation instructions of the package. Then you can clone this package in the src folder of you catkin workspace
