@@ -89,8 +89,8 @@ microfred_gazebo.urdf.xacro
 ### Machine Vision Demo
 
 To run the NVidia object detection demo with our stereo camera setup:
-Detach the camera that isn't rotated 90 degrees (the right side camera, the left one stays connected)
-Download the model:
+Set the resolution of the Jetson Nano desktop GUI to 720p.  
+Download the model:  
 - ```cd jetson-inference/tools```
 - ```./download_models.sh```  
   Select the model(s) you want to use, then hit `Okay` to download.  
