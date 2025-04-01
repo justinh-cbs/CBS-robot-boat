@@ -34,7 +34,7 @@ class GpsNode(Node):
         try:
             gps_packet = gpsd.get_current()
 
-            # Check if we have a fix
+            # check if we have a fix
             if gps_packet.mode >= 2:
                 msg = NavSatFix()
                 msg.header = Header()
@@ -47,12 +47,12 @@ class GpsNode(Node):
                 msg.latitude = gps_packet.lat
                 msg.longitude = gps_packet.lon
 
-                # If we have altitude (3D fix)
+                # if we have altitude (3D fix)
                 if gps_packet.mode >= 3:
                     msg.altitude = gps_packet.alt
 
                 try:
-                    # PDOP (Position Dilution of Precision)
+                    # PDOP (position dilution of precision)
                     pdop = gps_packet.pdop
                     covariance = pdop * pdop if pdop else 100.0
                     msg.position_covariance = [
