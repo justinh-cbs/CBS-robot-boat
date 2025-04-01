@@ -21,23 +21,20 @@ class CalibratedImuNode(Node):
     def __init__(self):
         super().__init__("imu_node")
 
-        # Publishers
-        self.imu_publisher = self.create_publisher(Imu, "imu", 10)
         self.mag_publisher = self.create_publisher(MagneticField, "imu/mag", 10)
-
-        self.timer = self.create_timer(0.1, self.publish_sensor_data)
+        self.imu_publisher = self.create_publisher(Imu, "imu", 10)
 
         self.frame_id = self.declare_parameter("frame_id", "base_imu_link").value
 
         self.declare_parameter("use_mag_calibration", True)
         self.declare_parameter("calibration_file", "mag_calibration.json")
+        self.timer = self.create_timer(0.1, self.publish_sensor_data)
 
-        # Initialize sensors
         self.imu = LSM6DS33()
         self.magnetometer = LIS3MDL()
         self.barometer = LPS25H()
 
-        # Load magnetometer calibration
+        # load magnetometer calibration
         self.mag_offset = np.zeros(3)
         self.mag_scale = np.ones(3)
         if self.get_parameter("use_mag_calibration").value:
@@ -123,7 +120,7 @@ class CalibratedImuNode(Node):
         mag_msg.header.frame_id = self.frame_id
 
         mag_data = self.get_calibrated_mag_reading()
-        mag_msg.magnetic_field.x = mag_data[0] * 1e-6  # Convert to Tesla
+        mag_msg.magnetic_field.x = mag_data[0] * 1e-6  # convert to Tesla
         mag_msg.magnetic_field.y = mag_data[1] * 1e-6
         mag_msg.magnetic_field.z = mag_data[2] * 1e-6
 
